@@ -7,17 +7,16 @@ import (
 	"path/filepath"
 
 	"github.com/nsxbet/masspr/pkg/mygit"
-	"github.com/nsxbet/masspr/pkg/printer"
 	"github.com/nsxbet/masspr/pkg/types"
 	"gopkg.in/yaml.v3"
 )
 
 type PRStatusManager struct {
 	statusDir string
-	printer   printer.Printer
+	printer   types.Printer
 }
 
-func NewPRStatusManager(statusDir string, printer printer.Printer) *PRStatusManager {
+func NewPRStatusManager(statusDir string, printer types.Printer) *PRStatusManager {
 	return &PRStatusManager{
 		statusDir: statusDir,
 		printer:   printer,

@@ -2,6 +2,16 @@ package types
 
 import "time"
 
+type Printer interface {
+	PrintNamespacesSummary(namespaces []string, counts map[string]int)
+	PrintNamespaceHeader(namespace string)
+	PrintPRStatus(name string, pr PRStatus, state string)
+	PrintError(format string, args ...interface{})
+	PrintPRConfig(pr interface{})
+	PrintInfo(format string, args ...interface{})
+	PrintDiff(diff string)
+}
+
 type PRStatus struct {
 	Name         string    `yaml:"name"`
 	LastRendered string    `yaml:"lastRendered"`
