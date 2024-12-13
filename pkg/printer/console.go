@@ -60,6 +60,25 @@ var (
 	scriptHeaderStyle = lipgloss.NewStyle().
 				Bold(true).
 				Foreground(lipgloss.Color("#FFFFFF"))
+
+	tabStyle = lipgloss.NewStyle().
+			Border(lipgloss.NormalBorder(), false, false, true, false).
+			BorderForeground(lipgloss.Color("#404040")).
+			Padding(0, 1).
+			MarginRight(2)
+
+	activeTabStyle = lipgloss.NewStyle().
+			Border(lipgloss.NormalBorder(), false, false, true, false).
+			BorderForeground(lipgloss.Color("#00FF9F")).
+			Foreground(lipgloss.Color("#00FF9F")).
+			Padding(0, 1).
+			MarginRight(2)
+
+	tabContentStyle = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("#404040")).
+			Padding(1, 2).
+			Width(100)
 )
 
 func (p *ConsolePrinter) PrintNamespacesSummary(namespaces []string, counts map[string]int) {
@@ -140,17 +159,24 @@ func (p *ConsolePrinter) PrintScriptOutput(script string, output []byte) {
 		return
 	}
 
+	// Create tab and content
+	activeTab := activeTabStyle.Render("Script")
+	tabs := []string{activeTab}
+
 	// Format the output
 	outputStr := strings.TrimSpace(string(output))
 	outputLines := strings.Split(outputStr, "\n")
 
 	// Build the content
 	content := []string{
-		scriptHeaderStyle.Render("Script Output"),
 		subtitleStyle.Render(script),
 		"", // Empty line for spacing
 		strings.Join(outputLines, "\n"),
 	}
 
-	fmt.Printf("\n%s\n", scriptStyle.Render(strings.Join(content, "\n")))
+	// Render tabs and content
+	tabRow := lipgloss.JoinHorizontal(lipgloss.Top, tabs...)
+	renderedContent := tabContentStyle.Render(strings.Join(content, "\n"))
+
+	fmt.Printf("\n%s\n%s\n", tabRow, renderedContent)
 }
