@@ -95,12 +95,10 @@ func (prs *PullRequestSet) runScript(repoDir string, script string, context map[
 	cmd.Env = env
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("script failed: %s: %v", output, err)
+		return fmt.Errorf("script failed: %v\n%s", err, output)
 	}
 
-	if len(output) > 0 {
-		prs.printer.PrintInfo("Script output (%s):\n%s", script, output)
-	}
+	prs.printer.PrintScriptOutput(script, output)
 
 	return nil
 }

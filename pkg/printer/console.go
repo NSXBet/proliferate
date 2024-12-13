@@ -54,7 +54,12 @@ var (
 			Foreground(lipgloss.Color("#00FF9F")).
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("#404040")).
-			Padding(1, 2)
+			Padding(1, 2).
+			Width(100)
+
+	scriptHeaderStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color("#FFFFFF"))
 )
 
 func (p *ConsolePrinter) PrintNamespacesSummary(namespaces []string, counts map[string]int) {
@@ -134,6 +139,18 @@ func (p *ConsolePrinter) PrintScriptOutput(script string, output []byte) {
 	if len(output) == 0 {
 		return
 	}
-	header := titleStyle.Render("Script Output") + "\n" + subtitleStyle.Render(script)
-	fmt.Printf("\n%s\n", scriptStyle.Render(header+"\n\n"+string(output)))
+
+	// Format the output
+	outputStr := strings.TrimSpace(string(output))
+	outputLines := strings.Split(outputStr, "\n")
+
+	// Build the content
+	content := []string{
+		scriptHeaderStyle.Render("Script Output"),
+		subtitleStyle.Render(script),
+		"", // Empty line for spacing
+		strings.Join(outputLines, "\n"),
+	}
+
+	fmt.Printf("\n%s\n", scriptStyle.Render(strings.Join(content, "\n")))
 }

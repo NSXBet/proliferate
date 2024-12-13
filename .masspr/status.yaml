@@ -2,7 +2,7 @@
     sample-app:
         name: sample-app
         lastRendered: ""
-        lastApplied: 2024-12-13T13:47:39.751151-03:00
+        lastApplied: 2024-12-13T13:51:35.316408-03:00
         prNumber: 31
         prUrl: https://github.com/NSXBet/sample-app/pull/31
         branch: feature/update-sample-app
@@ -10,11 +10,11 @@
         lastDiff: |-
             VERSION | 1 +
               1 file changed, 1 insertion(+)
-        lastCommit: 1c54f87ffedd6f9c12afe5acac08b22832c99431
+        lastCommit: 7835095988ff23ccedacc7b70fd0ee0118e5f228
     sample-app02:
         name: sample-app02
         lastRendered: ""
-        lastApplied: 2024-12-13T13:47:46.854079-03:00
+        lastApplied: 2024-12-13T13:51:42.294683-03:00
         prNumber: 32
         prUrl: https://github.com/NSXBet/sample-app/pull/32
         branch: feature/update-sample-app02
@@ -22,7 +22,7 @@
         lastDiff: |-
             VERSION | 1 +
               1 file changed, 1 insertion(+)
-        lastCommit: 07ec7db7ed3d9348c143b0bcdba596dda8b7e94e
+        lastCommit: 28bd20541d29ea42e44a725424f792db642aadf7
 03-test-pr-with-templating:
     sample-app-02:
         name: sample-app-02
