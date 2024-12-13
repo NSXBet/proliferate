@@ -6,35 +6,17 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"time"
 
 	"github.com/nsxbet/masspr/pkg/mygit"
 	"github.com/nsxbet/masspr/pkg/printer"
 	"github.com/nsxbet/masspr/pkg/service"
+	"github.com/nsxbet/masspr/pkg/types"
 	"gopkg.in/yaml.v3"
 )
 
-// PullRequest represents the PR configuration
-type PullRequest struct {
-	APIVersion string `yaml:"apiVersion"`
-	Kind       string `yaml:"kind"`
-	Metadata   struct {
-		Name      string `yaml:"name"`
-		Namespace string `yaml:"namespace"`
-	} `yaml:"metadata"`
-	Spec struct {
-		Repo           string            `yaml:"repo"`
-		Branch         string            `yaml:"branch"`
-		CommitMessage  string            `yaml:"commitMessage"`
-		PRTitle        string            `yaml:"prTitle"`
-		PRBody         string            `yaml:"prBody"`
-		PRLabels       []string          `yaml:"prLabels"`
-		PRAssignees    []string          `yaml:"prAssignees"`
-		ScriptsContext map[string]string `yaml:"scriptsContext"`
-		Scripts        []string          `yaml:"scripts"`
-	} `yaml:"spec"`
-	template string `yaml:"-" pp:"-"`
-}
+type PullRequest = types.PullRequest
 
 type PullRequestSet struct {
 	prs            []PullRequest
@@ -57,7 +39,6 @@ func NewPullRequestSet(yamlTemplate string, git *mygit.Git, svc *service.Service
 			return nil, fmt.Errorf("failed to parse template: %v", err)
 		}
 		if pr.APIVersion != "" {
-			pr.template = yamlTemplate
 			prs = append(prs, pr)
 		}
 	}
@@ -68,7 +49,6 @@ func NewPullRequestSet(yamlTemplate string, git *mygit.Git, svc *service.Service
 			return nil, fmt.Errorf("failed to parse PR template: %v", err)
 		}
 		if pr.APIVersion != "" {
-			pr.template = yamlTemplate
 			prs = append(prs, pr)
 		}
 	}
@@ -98,6 +78,33 @@ func (prs *PullRequestSet) Process(ctx context.Context, dryRun bool) error {
 	return nil
 }
 
+func (prs *PullRequestSet) runScript(repoDir string, script string, context map[string]string) error {
+	env := os.Environ()
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to get current directory: %v", err)
+	}
+
+	for k, v := range context {
+		env = append(env, fmt.Sprintf("%s=%s", k, v))
+	}
+	env = append(env, fmt.Sprintf("MASSPR_ROOT=%s", currentDir))
+
+	cmd := exec.Command("sh", "-c", script)
+	cmd.Dir = repoDir
+	cmd.Env = env
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("script failed: %s: %v", output, err)
+	}
+
+	if len(output) > 0 {
+		prs.printer.PrintInfo("Script output (%s):\n%s", script, output)
+	}
+
+	return nil
+}
+
 func (prs *PullRequestSet) processPR(ctx context.Context, index int, pr PullRequest, dryRun bool) error {
 	prs.printer.PrintNamespaceHeader(fmt.Sprintf("Pull Request %d", index+1))
 	prs.printer.PrintPRConfig(pr)
@@ -116,7 +123,7 @@ func (prs *PullRequestSet) processPR(ctx context.Context, index int, pr PullRequ
 	}
 
 	for _, script := range pr.Spec.Scripts {
-		if err := prs.svc.RunScript(repoDir, script, pr.Spec.ScriptsContext); err != nil {
+		if err := prs.runScript(repoDir, script, pr.Spec.ScriptsContext); err != nil {
 			return err
 		}
 	}
@@ -173,15 +180,14 @@ func (prs *PullRequestSet) processPR(ctx context.Context, index int, pr PullRequ
 	}
 
 	prStatus := PRStatus{
-		Name:         pr.Metadata.Name,
-		LastRendered: pr.template,
-		LastApplied:  time.Now(),
-		PRNumber:     createdPR.GetNumber(),
-		PRUrl:        createdPR.GetHTMLURL(),
-		Branch:       pr.Spec.Branch,
-		Repository:   pr.Spec.Repo,
-		LastDiff:     diffOutput,
-		LastCommit:   commitID,
+		Name:        pr.Metadata.Name,
+		LastApplied: time.Now(),
+		PRNumber:    createdPR.GetNumber(),
+		PRUrl:       createdPR.GetHTMLURL(),
+		Branch:      pr.Spec.Branch,
+		Repository:  pr.Spec.Repo,
+		LastDiff:    diffOutput,
+		LastCommit:  commitID,
 	}
 	if err := prs.status.SaveStatus(pr.Metadata.Namespace, prStatus); err != nil {
 		return fmt.Errorf("failed to update status: %v", err)

@@ -3,9 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"os"
-	"os/exec"
-	"strings"
 
 	"github.com/google/go-github/v60/github"
 	"github.com/nsxbet/masspr/pkg/mygit"
@@ -28,29 +25,6 @@ func New(token string) *Service {
 		githubClient: github.NewClient(tc),
 		git:          mygit.NewGit(token),
 	}
-}
-
-func (s *Service) RunScript(dir string, script string, context map[string]string) error {
-	env := os.Environ()
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("failed to get current directory: %v", err)
-	}
-	env = append(env, fmt.Sprintf("MASSPR_ROOT=%s", currentDir))
-
-	for k, v := range context {
-		env = append(env, fmt.Sprintf("%s=%s", strings.ToUpper(k), v))
-	}
-
-	cmd := exec.Command("sh", "-c", script)
-	cmd.Dir = dir
-	cmd.Env = env
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("script failed: %s: %v", output, err)
-	}
-
-	return nil
 }
 
 func (s *Service) CreatePR(ctx context.Context, owner, repo, branch, base, title, body string, labels []string, assignees []string) (*github.PullRequest, error) {
