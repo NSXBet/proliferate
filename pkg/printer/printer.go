@@ -13,6 +13,9 @@ type Printer interface {
 	PrintNamespaceHeader(namespace string)
 	PrintPRStatus(name string, pr types.PRStatus, state string)
 	PrintError(format string, args ...interface{})
+	PrintPRConfig(pr interface{})
+	PrintInfo(format string, args ...interface{})
+	PrintDiff(diff string)
 }
 
 type ConsolePrinter struct{}
@@ -60,4 +63,16 @@ func (p *ConsolePrinter) PrintPRStatus(name string, pr types.PRStatus, state str
 
 func (p *ConsolePrinter) PrintError(format string, args ...interface{}) {
 	pp.Printf(format, args...)
+}
+
+func (p *ConsolePrinter) PrintPRConfig(pr interface{}) {
+	pp.Println(pr)
+}
+
+func (p *ConsolePrinter) PrintInfo(format string, args ...interface{}) {
+	pp.Printf(format+"\n", args...)
+}
+
+func (p *ConsolePrinter) PrintDiff(diff string) {
+	pp.Printf("\nRepository changes:\n%s", diff)
 }

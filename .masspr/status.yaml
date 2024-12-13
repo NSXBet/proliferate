@@ -2,7 +2,7 @@
     sample-app:
         name: sample-app
         lastRendered: "\napiVersion: pullrequest.masspr.dev/v1alpha1\nkind: PullRequest\nmetadata:\n  name: sample-app\n  namespace: 02-test-pr-with-templating\nspec:\n  repo: github.com/nsxbet/sample-app\n  branch: \"feature/update-sample-app\"\n  commitMessage: \"feat: update sample-app configuration\"\n  prTitle: \"Update sample-app configuration\"\n  prBody: |\n    Here's a new Change, This PR updates the configuration for github.com/nsxbet/sample-app.\n    \n    ## Contributors\n    Top contributor: @gedhean\n    \n    ### Team Information\n    Predominant team: @Team SRE\n  prLabels:\n    - sre\n    - automated\n  prAssignees:\n    - gedhean\n    - yurifrl\n    - patrickmagal\n  scriptsContext:\n    environment: staging\n    region: us-east-1\n    cluster: eks-staging\n    team: \"Team SRE\"\n  scripts:\n    - \"$MASSPR_ROOT/test/scripts/test.sh\"\n    - \"python3 $MASSPR_ROOT/test/scripts/test.py\"\n---\napiVersion: pullrequest.masspr.dev/v1alpha1\nkind: PullRequest\nmetadata:\n  name: sample-app02\n  namespace: 02-test-pr-with-templating\nspec:\n  repo: github.com/nsxbet/sample-app\n  branch: \"feature/update-sample-app02\"\n  commitMessage: \"feat: update sample-app02 configuration\"\n  prTitle: \"Update sample-app02 configuration\"\n  prBody: |\n    Here's a new Change, This PR updates the configuration for github.com/nsxbet/sample-app.\n    \n    ## Contributors\n    Top contributor: @gedhean\n    \n    ### Team Information\n    Predominant team: @Team SRE\n  prLabels:\n    - sre\n    - automated\n  prAssignees:\n    - gedhean\n    - yurifrl\n    - patrickmagal\n  scriptsContext:\n    environment: staging\n    region: us-east-1\n    cluster: eks-staging\n    team: \"Team SRE\"\n  scripts:\n    - \"$MASSPR_ROOT/test/scripts/test.sh\"\n    - \"python3 $MASSPR_ROOT/test/scripts/test.py\"\n---\n"
-        lastApplied: 2024-12-13T13:21:13.40029-03:00
+        lastApplied: 2024-12-13T13:22:50.028055-03:00
         prNumber: 31
         prUrl: https://github.com/NSXBet/sample-app/pull/31
         branch: feature/update-sample-app
@@ -10,11 +10,11 @@
         lastDiff: |-
             VERSION | 1 +
               1 file changed, 1 insertion(+)
-        lastCommit: d32800d11d3fe37519a68b7c0960bc61d9aa7901
+        lastCommit: 611c3fe97855941e9f83f7b05e674e6fda0f0edb
     sample-app02:
         name: sample-app02
         lastRendered: "\napiVersion: pullrequest.masspr.dev/v1alpha1\nkind: PullRequest\nmetadata:\n  name: sample-app\n  namespace: 02-test-pr-with-templating\nspec:\n  repo: github.com/nsxbet/sample-app\n  branch: \"feature/update-sample-app\"\n  commitMessage: \"feat: update sample-app configuration\"\n  prTitle: \"Update sample-app configuration\"\n  prBody: |\n    Here's a new Change, This PR updates the configuration for github.com/nsxbet/sample-app.\n    \n    ## Contributors\n    Top contributor: @gedhean\n    \n    ### Team Information\n    Predominant team: @Team SRE\n  prLabels:\n    - sre\n    - automated\n  prAssignees:\n    - gedhean\n    - yurifrl\n    - patrickmagal\n  scriptsContext:\n    environment: staging\n    region: us-east-1\n    cluster: eks-staging\n    team: \"Team SRE\"\n  scripts:\n    - \"$MASSPR_ROOT/test/scripts/test.sh\"\n    - \"python3 $MASSPR_ROOT/test/scripts/test.py\"\n---\napiVersion: pullrequest.masspr.dev/v1alpha1\nkind: PullRequest\nmetadata:\n  name: sample-app02\n  namespace: 02-test-pr-with-templating\nspec:\n  repo: github.com/nsxbet/sample-app\n  branch: \"feature/update-sample-app02\"\n  commitMessage: \"feat: update sample-app02 configuration\"\n  prTitle: \"Update sample-app02 configuration\"\n  prBody: |\n    Here's a new Change, This PR updates the configuration for github.com/nsxbet/sample-app.\n    \n    ## Contributors\n    Top contributor: @gedhean\n    \n    ### Team Information\n    Predominant team: @Team SRE\n  prLabels:\n    - sre\n    - automated\n  prAssignees:\n    - gedhean\n    - yurifrl\n    - patrickmagal\n  scriptsContext:\n    environment: staging\n    region: us-east-1\n    cluster: eks-staging\n    team: \"Team SRE\"\n  scripts:\n    - \"$MASSPR_ROOT/test/scripts/test.sh\"\n    - \"python3 $MASSPR_ROOT/test/scripts/test.py\"\n---\n"
-        lastApplied: 2024-12-13T13:21:21.033898-03:00
+        lastApplied: 2024-12-13T13:22:57.153633-03:00
         prNumber: 32
         prUrl: https://github.com/NSXBet/sample-app/pull/32
         branch: feature/update-sample-app02
@@ -22,7 +22,7 @@
         lastDiff: |-
             VERSION | 1 +
               1 file changed, 1 insertion(+)
-        lastCommit: 1abb00461aef3b13b5b58d59e271303392e264c1
+        lastCommit: 3cedd773a5a21be0a1dc142b099903cfa641ee5a
 03-test-pr-with-templating:
     sample-app-02:
         name: sample-app-02

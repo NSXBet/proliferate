@@ -8,7 +8,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/k0kubun/pp/v3"
 	"github.com/nsxbet/masspr/pkg/mygit"
 	"github.com/nsxbet/masspr/pkg/printer"
 	"github.com/nsxbet/masspr/pkg/service"
@@ -89,7 +88,7 @@ func NewPullRequestSet(yamlTemplate string, git *mygit.Git, svc *service.Service
 }
 
 func (prs *PullRequestSet) Process(ctx context.Context, dryRun bool) error {
-	pp.Printf("=== Found %d Pull Request(s) ===\n", len(prs.prs))
+	prs.printer.PrintNamespaceHeader(fmt.Sprintf("Found %d Pull Request(s)", len(prs.prs)))
 
 	for i, pr := range prs.prs {
 		if err := prs.processPR(ctx, i, pr, dryRun); err != nil {
@@ -100,8 +99,8 @@ func (prs *PullRequestSet) Process(ctx context.Context, dryRun bool) error {
 }
 
 func (prs *PullRequestSet) processPR(ctx context.Context, index int, pr PullRequest, dryRun bool) error {
-	pp.Printf("\n=== Pull Request %d ===\n", index+1)
-	pp.Println(pr)
+	prs.printer.PrintNamespaceHeader(fmt.Sprintf("Pull Request %d", index+1))
+	prs.printer.PrintPRConfig(pr)
 
 	repoDir, err := prs.git.Clone(pr.Spec.Repo)
 	if err != nil {
@@ -110,7 +109,7 @@ func (prs *PullRequestSet) processPR(ctx context.Context, index int, pr PullRequ
 	if !dryRun {
 		defer os.RemoveAll(repoDir)
 	}
-	pp.Printf("Cloned repository to: %s\n", repoDir)
+	prs.printer.PrintInfo("Cloned repository to: %s", repoDir)
 
 	if err := prs.git.CreateBranch(repoDir, pr.Spec.Branch); err != nil {
 		return err
@@ -127,9 +126,9 @@ func (prs *PullRequestSet) processPR(ctx context.Context, index int, pr PullRequ
 		return err
 	}
 	if len(diffOutput) > 0 {
-		pp.Printf("\nRepository changes:\n%s", diffOutput)
+		prs.printer.PrintDiff(diffOutput)
 	} else {
-		pp.Printf("\nNo changes in repository\n")
+		prs.printer.PrintInfo("No changes in repository")
 	}
 
 	if err := prs.git.Add(repoDir); err != nil {
