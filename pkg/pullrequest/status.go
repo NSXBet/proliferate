@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/nsxbet/masspr/pkg/mygit"
 	"github.com/nsxbet/masspr/pkg/types"
@@ -130,20 +131,45 @@ func (m *PRStatusManager) DisplayNamespaceDetails(ctx context.Context, namespace
 
 	m.printer.PrintNamespaceHeader(namespace)
 
-	for name, pr := range prs {
-		owner, repoName, err := git.ParseRepoString(pr.Repository)
-		if err != nil {
-			m.printer.PrintError("\n PR: %s (Failed to parse repo: %v)\n", name, err)
-			continue
-		}
-
-		prState, err := git.GetPRStatus(ctx, owner, repoName, pr.PRNumber)
-		if err != nil {
-			m.printer.PrintError("\n PR: %s (Failed to get GitHub status: %v)\n", name, err)
-			continue
-		}
-
-		m.printer.PrintPRStatus(name, pr, prState)
+	type prResult struct {
+		name  string
+		pr    PRStatus
+		state string
+		err   error
 	}
+
+	resultChan := make(chan prResult, len(prs))
+	var wg sync.WaitGroup
+
+	for name, pr := range prs {
+		wg.Add(1)
+		go func(name string, pr PRStatus) {
+			defer wg.Done()
+			owner, repoName, err := git.ParseRepoString(pr.Repository)
+			if err != nil {
+				resultChan <- prResult{name: name, err: err}
+				return
+			}
+
+			state, err := git.GetPRStatus(ctx, owner, repoName, pr.PRNumber)
+			resultChan <- prResult{name: name, pr: pr, state: state, err: err}
+		}(name, pr)
+	}
+
+	// Wait for all goroutines to finish
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	// Process results in order received
+	for result := range resultChan {
+		if result.err != nil {
+			m.printer.PrintError("\n PR: %s (Failed: %v)\n", result.name, result.err)
+			continue
+		}
+		m.printer.PrintPRStatus(result.name, result.pr, result.state)
+	}
+
 	return nil
 }

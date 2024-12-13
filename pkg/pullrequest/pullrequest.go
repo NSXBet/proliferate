@@ -67,43 +67,17 @@ func NewPullRequestSet(yamlTemplate string, git *mygit.Git, svc *service.Service
 	}, nil
 }
 
-func (prs *PullRequestSet) Process(ctx context.Context, dryRun bool) error {
-	prs.printer.PrintNamespaceHeader(fmt.Sprintf("Found %d Pull Request(s)", len(prs.prs)))
-
-	for i, pr := range prs.prs {
-		if err := prs.processPR(ctx, i, pr, dryRun); err != nil {
-			return err
-		}
-	}
-	return nil
+func (prs *PullRequestSet) GetPRs() []PullRequest {
+	return prs.prs
 }
 
-func (prs *PullRequestSet) runScript(repoDir string, script string, context map[string]string) error {
-	env := os.Environ()
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("failed to get current directory: %v", err)
+func (prs *PullRequestSet) ProcessPR(ctx context.Context, index int, pr PullRequest, dryRun bool) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
 	}
 
-	for k, v := range context {
-		env = append(env, fmt.Sprintf("%s=%s", k, v))
-	}
-	env = append(env, fmt.Sprintf("MASSPR_ROOT=%s", currentDir))
-
-	cmd := exec.Command("sh", "-c", script)
-	cmd.Dir = repoDir
-	cmd.Env = env
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("script failed: %v\n%s", err, output)
-	}
-
-	prs.printer.PrintScriptOutput(script, output)
-
-	return nil
-}
-
-func (prs *PullRequestSet) processPR(ctx context.Context, index int, pr PullRequest, dryRun bool) error {
 	prs.printer.PrintNamespaceHeader(fmt.Sprintf("Pull Request %d", index+1))
 	prs.printer.PrintPRConfig(pr)
 
@@ -190,6 +164,31 @@ func (prs *PullRequestSet) processPR(ctx context.Context, index int, pr PullRequ
 	if err := prs.status.SaveStatus(pr.Metadata.Namespace, prStatus); err != nil {
 		return fmt.Errorf("failed to update status: %v", err)
 	}
+
+	return nil
+}
+
+func (prs *PullRequestSet) runScript(repoDir string, script string, context map[string]string) error {
+	env := os.Environ()
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to get current directory: %v", err)
+	}
+
+	for k, v := range context {
+		env = append(env, fmt.Sprintf("%s=%s", k, v))
+	}
+	env = append(env, fmt.Sprintf("MASSPR_ROOT=%s", currentDir))
+
+	cmd := exec.Command("sh", "-c", script)
+	cmd.Dir = repoDir
+	cmd.Env = env
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("script failed: %v\n%s", err, output)
+	}
+
+	prs.printer.PrintScriptOutput(script, output)
 
 	return nil
 }

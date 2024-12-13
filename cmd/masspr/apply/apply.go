@@ -40,6 +40,9 @@ func NewCommand() *cobra.Command {
 }
 
 func (ac *applyCommand) run(cmd *cobra.Command, args []string) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	token := viper.GetString("github-token")
 	if token == "" {
 		return fmt.Errorf("no GitHub token found in environment or config file")
@@ -76,10 +79,41 @@ func (ac *applyCommand) run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	ctx := context.Background()
+	prs := prSet.GetPRs()
 
-	if err := prSet.Process(ctx, ac.dryRun); err != nil {
-		return err
+	// Create a worker pool
+	workers := 3
+	if workers > len(prs) {
+		workers = len(prs)
+	}
+
+	jobs := make(chan int, len(prs))
+	results := make(chan error, len(prs))
+
+	// Start workers
+	for w := 0; w < workers; w++ {
+		go func() {
+			for i := range jobs {
+				err := prSet.ProcessPR(ctx, i, prs[i], ac.dryRun)
+				results <- err
+				if err != nil {
+					cancel() // Cancel other workers on error
+				}
+			}
+		}()
+	}
+
+	// Send jobs
+	for i := range prs {
+		jobs <- i
+	}
+	close(jobs)
+
+	// Collect results
+	for i := 0; i < len(prs); i++ {
+		if err := <-results; err != nil {
+			return err
+		}
 	}
 
 	return nil
