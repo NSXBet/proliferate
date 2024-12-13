@@ -1,4 +1,4 @@
-module charm-cli
+module github.com/nsxbet/masspr
 
 go 1.21
 
