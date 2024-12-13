@@ -10,8 +10,10 @@ import (
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 
-	"github.com/nsxbet/masspr/pkg/masspr"
 	"github.com/nsxbet/masspr/pkg/mygit"
+	"github.com/nsxbet/masspr/pkg/printer"
+	"github.com/nsxbet/masspr/pkg/pullrequest"
+	"github.com/nsxbet/masspr/pkg/service"
 )
 
 type applyCommand struct {
@@ -65,10 +67,11 @@ func (ac *applyCommand) run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to render template: %v", err)
 	}
 
-	svc := masspr.New(token)
+	svc := service.New(token)
 	git := mygit.NewGit(token)
+	p := printer.NewConsolePrinter()
 
-	prSet, err := masspr.NewPullRequestSet(templateString, git, svc)
+	prSet, err := pullrequest.NewPullRequestSet(templateString, git, svc, p)
 	if err != nil {
 		return err
 	}

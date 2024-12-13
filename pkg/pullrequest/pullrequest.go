@@ -1,4 +1,4 @@
-package masspr
+package pullrequest
 
 import (
 	"bytes"
@@ -10,6 +10,8 @@ import (
 
 	"github.com/k0kubun/pp/v3"
 	"github.com/nsxbet/masspr/pkg/mygit"
+	"github.com/nsxbet/masspr/pkg/printer"
+	"github.com/nsxbet/masspr/pkg/service"
 	"gopkg.in/yaml.v3"
 )
 
@@ -35,28 +37,16 @@ type PullRequest struct {
 	template string `yaml:"-" pp:"-"`
 }
 
-type PRStatus struct {
-	Name         string    `yaml:"name"`
-	LastRendered string    `yaml:"lastRendered"`
-	LastApplied  time.Time `yaml:"lastApplied"`
-	PRNumber     int       `yaml:"prNumber"`
-	PRUrl        string    `yaml:"prUrl"`
-	Branch       string    `yaml:"branch"`
-	Repository   string    `yaml:"repository"`
-	LastDiff     string    `yaml:"lastDiff"`
-	LastCommit   string    `yaml:"lastCommit"`
-}
-
-type NamespacedStatus map[string]map[string]PRStatus
-
 type PullRequestSet struct {
 	prs            []PullRequest
-	svc            *Service
+	svc            *service.Service
 	git            *mygit.Git
+	status         *PRStatusManager
 	templateString string
+	printer        printer.Printer
 }
 
-func NewPullRequestSet(yamlTemplate string, git *mygit.Git, svc *Service) (*PullRequestSet, error) {
+func NewPullRequestSet(yamlTemplate string, git *mygit.Git, svc *service.Service, printer printer.Printer) (*PullRequestSet, error) {
 	var prs []PullRequest
 	decoder := yaml.NewDecoder(bytes.NewBufferString(yamlTemplate))
 	for {
@@ -92,7 +82,9 @@ func NewPullRequestSet(yamlTemplate string, git *mygit.Git, svc *Service) (*Pull
 		prs:            prs,
 		svc:            svc,
 		git:            git,
+		status:         NewPRStatusManager(".masspr", printer),
 		templateString: yamlTemplate,
+		printer:        printer,
 	}, nil
 }
 
@@ -156,7 +148,7 @@ func (prs *PullRequestSet) processPR(ctx context.Context, index int, pr PullRequ
 		return err
 	}
 
-	owner, repoName, err := prs.svc.ParseRepoString(pr.Spec.Repo)
+	owner, repoName, err := prs.git.ParseRepoString(pr.Spec.Repo)
 	if err != nil {
 		return err
 	}
@@ -192,7 +184,7 @@ func (prs *PullRequestSet) processPR(ctx context.Context, index int, pr PullRequ
 		LastDiff:     diffOutput,
 		LastCommit:   commitID,
 	}
-	if err := prs.svc.SaveStatus(pr.Metadata.Namespace, prStatus); err != nil {
+	if err := prs.status.SaveStatus(pr.Metadata.Namespace, prStatus); err != nil {
 		return fmt.Errorf("failed to update status: %v", err)
 	}
 

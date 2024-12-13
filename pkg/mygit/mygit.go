@@ -1,19 +1,30 @@
 package mygit
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/google/go-github/github"
+	"golang.org/x/oauth2"
 )
 
 type Git struct {
 	token string
+	gh    *github.Client
 }
 
 func NewGit(token string) *Git {
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+	tc := oauth2.NewClient(ctx, ts)
+	gh := github.NewClient(tc)
+
 	return &Git{
 		token: token,
+		gh:    gh,
 	}
 }
 

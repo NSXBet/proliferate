@@ -3,6 +3,7 @@ module github.com/nsxbet/masspr
 go 1.21
 
 require (
+	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-github/v60 v60.0.0
 	github.com/k0kubun/pp/v3 v3.2.0
 	github.com/spf13/cobra v1.8.1
