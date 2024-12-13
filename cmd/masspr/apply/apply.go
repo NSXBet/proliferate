@@ -10,20 +10,19 @@ import (
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 
-	"github.com/nsxbet/masspr/pkg/mygit"
-	"github.com/nsxbet/masspr/pkg/printer"
+	"github.com/nsxbet/masspr/pkg/core"
 	"github.com/nsxbet/masspr/pkg/pullrequest"
-	"github.com/nsxbet/masspr/pkg/service"
 )
 
 type applyCommand struct {
 	valuesFile string
 	prFile     string
 	dryRun     bool
+	core       core.Core
 }
 
-func NewCommand() *cobra.Command {
-	ac := &applyCommand{}
+func NewCommand(c core.Core) *cobra.Command {
+	ac := &applyCommand{core: c}
 	cmd := &cobra.Command{
 		Use:   "apply",
 		Short: "Apply values to a pull request definition",
@@ -70,11 +69,7 @@ func (ac *applyCommand) run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to render template: %v", err)
 	}
 
-	svc := service.New(token)
-	git := mygit.NewGit(token)
-	p := printer.NewConsolePrinter()
-
-	prSet, err := pullrequest.NewPullRequestSet(templateString, git, svc, p)
+	prSet, err := pullrequest.NewPullRequestSet(templateString, ac.core.Git, ac.core.Printer)
 	if err != nil {
 		return err
 	}

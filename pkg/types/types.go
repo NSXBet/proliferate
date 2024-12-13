@@ -1,6 +1,8 @@
 package types
 
-import "time"
+import (
+	"time"
+)
 
 type Printer interface {
 	PrintNamespacesSummary(namespaces []string, counts map[string]int)
@@ -46,4 +48,8 @@ type PullRequest struct {
 		ScriptsContext map[string]string `yaml:"scriptsContext"`
 		Scripts        []string          `yaml:"scripts"`
 	} `yaml:"spec"`
+}
+
+type Config interface {
+	GetGithubToken() string
 }

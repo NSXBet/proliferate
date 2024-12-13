@@ -15,12 +15,15 @@ import (
 type PRStatusManager struct {
 	statusDir string
 	printer   types.Printer
+	mu        sync.Mutex
+	status    NamespacedStatus
 }
 
 func NewPRStatusManager(statusDir string, printer types.Printer) *PRStatusManager {
 	return &PRStatusManager{
 		statusDir: statusDir,
 		printer:   printer,
+		status:    make(NamespacedStatus),
 	}
 }
 
@@ -172,4 +175,24 @@ func (m *PRStatusManager) DisplayNamespaceDetails(ctx context.Context, namespace
 	}
 
 	return nil
+}
+
+func (m *PRStatusManager) UpdatePRStatus(namespace, name string, updateFn func(*types.PRStatus)) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	status, err := m.loadAll()
+	if err != nil {
+		return err
+	}
+
+	if status[namespace] == nil {
+		status[namespace] = make(map[string]PRStatus)
+	}
+
+	prStatus := status[namespace][name]
+	updateFn(&prStatus)
+	status[namespace][name] = prStatus
+
+	return m.saveAll(status)
 }

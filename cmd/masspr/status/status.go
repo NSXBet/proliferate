@@ -2,34 +2,28 @@ package status
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-
+	"github.com/nsxbet/masspr/pkg/core"
 	"github.com/nsxbet/masspr/pkg/mygit"
-	"github.com/nsxbet/masspr/pkg/printer"
 	"github.com/nsxbet/masspr/pkg/pullrequest"
+	"github.com/spf13/cobra"
 )
 
-func NewCommand() *cobra.Command {
-	return &cobra.Command{
+func NewCommand(c core.Core) *cobra.Command {
+	cmd := &cobra.Command{
 		Use:   "status [namespace]",
 		Short: "Show status of pull requests",
-		RunE:  runStatus,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runStatus(c, args)
+		},
 	}
+	return cmd
 }
 
-func runStatus(cmd *cobra.Command, args []string) error {
-	token := viper.GetString("github-token")
-	if token == "" {
-		return fmt.Errorf("no GitHub token found in environment or config file")
-	}
-
+func runStatus(c core.Core, args []string) error {
+	git := mygit.NewGit(c.Config)
 	ctx := context.Background()
-	git := mygit.NewGit(token)
-	p := printer.NewConsolePrinter()
-	statusMgr := pullrequest.NewPRStatusManager(".masspr", p)
+	statusMgr := pullrequest.NewPRStatusManager(".masspr", c.Printer)
 
 	if len(args) == 0 {
 		return statusMgr.DisplayNamespacesSummary()

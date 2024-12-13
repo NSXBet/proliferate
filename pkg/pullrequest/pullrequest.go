@@ -11,7 +11,6 @@ import (
 
 	"github.com/nsxbet/masspr/pkg/mygit"
 	"github.com/nsxbet/masspr/pkg/printer"
-	"github.com/nsxbet/masspr/pkg/service"
 	"github.com/nsxbet/masspr/pkg/types"
 	"gopkg.in/yaml.v3"
 )
@@ -20,14 +19,13 @@ type PullRequest = types.PullRequest
 
 type PullRequestSet struct {
 	prs            []PullRequest
-	svc            *service.Service
 	git            *mygit.Git
 	status         *PRStatusManager
 	templateString string
 	printer        printer.Printer
 }
 
-func NewPullRequestSet(yamlTemplate string, git *mygit.Git, svc *service.Service, printer printer.Printer) (*PullRequestSet, error) {
+func NewPullRequestSet(yamlTemplate string, git *mygit.Git, printer printer.Printer) (*PullRequestSet, error) {
 	var prs []PullRequest
 	decoder := yaml.NewDecoder(bytes.NewBufferString(yamlTemplate))
 	for {
@@ -59,7 +57,6 @@ func NewPullRequestSet(yamlTemplate string, git *mygit.Git, svc *service.Service
 
 	return &PullRequestSet{
 		prs:            prs,
-		svc:            svc,
 		git:            git,
 		status:         NewPRStatusManager(".masspr", printer),
 		templateString: yamlTemplate,
@@ -131,7 +128,7 @@ func (prs *PullRequestSet) ProcessPR(ctx context.Context, index int, pr PullRequ
 		return err
 	}
 
-	createdPR, err := prs.svc.CreatePR(
+	createdPR, err := prs.git.CreatePR(
 		ctx,
 		owner,
 		repoName,
@@ -151,18 +148,17 @@ func (prs *PullRequestSet) ProcessPR(ctx context.Context, index int, pr PullRequ
 		return err
 	}
 
-	prStatus := PRStatus{
-		Name:        pr.Metadata.Name,
-		LastApplied: time.Now(),
-		PRNumber:    createdPR.GetNumber(),
-		PRUrl:       createdPR.GetHTMLURL(),
-		Branch:      pr.Spec.Branch,
-		Repository:  pr.Spec.Repo,
-		LastDiff:    diffOutput,
-		LastCommit:  commitID,
-	}
-	if err := prs.status.SaveStatus(pr.Metadata.Namespace, prStatus); err != nil {
-		return fmt.Errorf("failed to update status: %v", err)
+	if err := prs.status.UpdatePRStatus(pr.Metadata.Namespace, pr.Metadata.Name, func(status *types.PRStatus) {
+		status.Name = pr.Metadata.Name
+		status.LastApplied = time.Now()
+		status.Branch = pr.Spec.Branch
+		status.Repository = pr.Spec.Repo
+		status.LastDiff = diffOutput
+		status.LastCommit = commitID
+		status.PRNumber = createdPR.GetNumber()
+		status.PRUrl = createdPR.GetHTMLURL()
+	}); err != nil {
+		return fmt.Errorf("failed to update PR status: %v", err)
 	}
 
 	return nil
