@@ -1,0 +1,20 @@
+{
+  "nsxbet/sample-app-27": {
+    "repo": "nsxbet/sample-app",
+    "pr_number": 27,
+    "pr_url": "https://github.com/NSXBet/sample-app/pull/27",
+    "patch": "patch-01-add-metadata"
+  },
+  "nsxbet/sample-app-28": {
+    "repo": "nsxbet/sample-app",
+    "pr_number": 28,
+    "pr_url": "https://github.com/NSXBet/sample-app/pull/28",
+    "patch": "patch-02-append-domain"
+  },
+  "nsxbet/sample-app-29": {
+    "repo": "nsxbet/sample-app",
+    "pr_number": 29,
+    "pr_url": "https://github.com/NSXBet/sample-app/pull/29",
+    "patch": "patch-03-normalize-indent"
+  }
+}

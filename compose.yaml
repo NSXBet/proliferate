@@ -1,0 +1,15 @@
+services:
+  x-defaults: &defaults
+    build: .
+    volumes:
+      - .:/workspace
+      - ../org-state/data/output.yaml:/data/output.yaml
+    env_file:
+      - .env
+
+  sh:
+    <<: *defaults
+    entrypoint: sh
+
+  run:
+    <<: *defaults

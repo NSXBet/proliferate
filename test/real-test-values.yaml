@@ -1,0 +1,33 @@
+sample-app:
+  repo: github.com/nsxbet/sample-app
+  top_contributor: gedhean
+  top_contributors:
+    - username: gedhean
+      commits: 58
+      teams: &id004
+        - NSX All Developers
+        - Team SRE
+    - username: yurifrl
+      commits: 21
+      teams: *id004
+    - username: patrickmagal
+      commits: 21
+      teams: *id004
+  predominant_team: Team SRE
+
+sample-app02:
+  repo: github.com/nsxbet/sample-app
+  top_contributor: gedhean
+  top_contributors:
+    - username: gedhean
+      commits: 58
+      teams: &id004
+        - NSX All Developers
+        - Team SRE
+    - username: yurifrl
+      commits: 21
+      teams: *id004
+    - username: patrickmagal
+      commits: 21
+      teams: *id004
+  predominant_team: Team SRE

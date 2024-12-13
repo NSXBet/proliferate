@@ -1,0 +1,89 @@
+kubernetes:
+  base:
+    sourceRepo:
+      name: sample-app
+      org: NSXBet
+    monoRepo:
+      url: git@github.com:NSXBet/monorepo-gitops.git
+      appsFolder: apps-config
+      argoCDValues: helms/argocd/values.yaml
+      repository: monorepo-gitops
+    containerRegistry:
+      url: 492684252576.dkr.ecr.us-east-1.amazonaws.com
+    deployConfig:
+      cluster: EKS-NSX
+      environment: production
+      steps:
+      - build
+      - push
+      - versioning
+      - deploy
+      service:
+        istio: enabled
+      metadata:
+        team: sre
+    metadata:
+      team: xablau
+  apps:
+  - name: sample-app-public
+    dockerfile: ./Dockerfile
+    imagePullPolicy: Always
+    kind: deployment
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    hpa:
+      maxReplicas: 2
+      minReplicas: 1
+      targetCPUUtilizationPercentage: 60
+    service:
+      healthcheck:
+        initialDelaySeconds: 5
+        interval: 30
+        path: /
+        port: 3000
+        timeoutSeconds: 5
+      istio: true
+      ports:
+      - containerPort: 3000
+        name: sample-app-public
+        virtualservices:
+        - gateway: public-gateway
+          hosts:
+          - sample-app-prod.bet6.com.br
+  - name: sample-app-internal
+    dockerfile: ./Dockerfile
+    imagePullPolicy: Always
+    kind: deployment
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    hpa:
+      maxReplicas: 2
+      minReplicas: 1
+      targetCPUUtilizationPercentage: 60
+    service:
+      attestation:
+        port: 9999
+      healthcheck:
+        initialDelaySeconds: 5
+        interval: 30
+        path: /
+        port: 3000
+        timeoutSeconds: 5
+      istio: true
+      ports:
+      - containerPort: 3000
+        name: sample-app-internal
+        virtualservices:
+        - gateway: internal-gateway
+          hosts:
+          - sample-app-prod.nsx.services

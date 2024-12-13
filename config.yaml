@@ -1,0 +1,9 @@
+# The name, including owner of a GitHub repository in the format "ownerName/repoName".
+repo:
+  - nsxbet/sample-app
+
+# Email of the committer. If not set, the global git config setting will be used.
+author-email: sre@nsx.bet
+
+# Name of the committer. If not set, the global git config setting will be used.
+author-name: SRE Team
