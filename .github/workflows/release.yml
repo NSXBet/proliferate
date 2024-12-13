@@ -41,14 +41,20 @@ jobs:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
         run: |
-          go build -o ${{ matrix.binary }} ./cmd/masspr
+          go build -ldflags="-s -w" -o ${{ matrix.binary }} ./cmd/masspr
           chmod +x ${{ matrix.binary }}
+          if [[ "${{ matrix.os }}" == "darwin" ]]; then
+            # Create zip for macOS to preserve executable permission
+            zip -j ${{ matrix.binary }}.zip ${{ matrix.binary }}
+            mv ${{ matrix.binary }}.zip ${{ matrix.binary }}
+          fi
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.binary }}
-          path: ${{ matrix.binary }}
+          path: |
+            ${{ matrix.binary }}
           retention-days: 5
 
   release:
