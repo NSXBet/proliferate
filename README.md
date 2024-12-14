@@ -134,3 +134,9 @@ docker-compose run --rm sh
 ## License
 
 This project is licensed under the MIT License
+
+# TODO
+
+- [ ] Allow the behaviour of script fail to be configurable
+- [ ] Obey (or do somehting) the repos from the config
+- [ ] Better error when not setting token
