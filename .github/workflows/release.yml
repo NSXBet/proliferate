@@ -41,7 +41,7 @@ jobs:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
         run: |
-          go build -ldflags="-s -w" -o ${{ matrix.binary }} ./cmd/pro
+          go build -ldflags="-s -w -X main.version=${GITHUB_REF_NAME}" -o ${{ matrix.binary }} ./cmd/pro
           chmod +x ${{ matrix.binary }}
           if [[ "${{ matrix.os }}" == "darwin" ]]; then
             # Create zip for macOS to preserve executable permission

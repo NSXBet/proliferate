@@ -34,11 +34,24 @@ func (c cmdConfig) GetGithubToken() string {
 	return c.GithubToken
 }
 
+var (
+	version = "dev" // This will be replaced during build time
+)
+
 func main() {
 	rootCmd := &cobra.Command{
 		Use:   "pro",
 		Short: "Proliferate - A tool for managing multiple pull requests",
 	}
+
+	versionCmd := &cobra.Command{
+		Use:   "version",
+		Short: "Print the version number",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Printf("pro version %s\n", version)
+		},
+	}
+	rootCmd.AddCommand(versionCmd)
 
 	rootCmd.PersistentFlags().String("config", "", "config file (default is ./config.yaml)")
 	cfgFile, _ := rootCmd.PersistentFlags().GetString("config")
