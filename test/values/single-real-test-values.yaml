@@ -1,0 +1,16 @@
+sample-app:
+  repo: github.com/nsxbet/proliferate
+  top_contributor: bob
+  top_contributors:
+    - username: bob
+      commits: 58
+      teams: &id004
+        - Everyone
+        - Team A
+    - username: dave
+      commits: 21
+      teams: *id004
+    - username: marc
+      commits: 21
+      teams: *id004
+  predominant_team: Team A

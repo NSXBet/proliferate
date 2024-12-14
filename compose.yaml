@@ -1,0 +1,14 @@
+services:
+  x-defaults: &defaults
+    build: .
+    volumes:
+      - .:/workspace
+    env_file:
+      - .env
+
+  sh:
+    <<: *defaults
+    entrypoint: sh
+
+  run:
+    <<: *defaults

@@ -1,0 +1,35 @@
+{{- range $app, $values := .Values }}
+apiVersion: pullrequest.pro.dev/v1alpha1
+kind: PullRequest
+metadata:
+  name: {{ $app }}
+  namespace: 02-test-pr-with-templating
+spec:
+  repo: {{ $values.repo }}
+  branch: "feature/update-{{ $app }}"
+  commitMessage: "feat: update {{ $app }} configuration"
+  prTitle: "Update {{ $app }} configuration"
+  prBody: |
+    Here's a new Change, This PR updates the configuration for {{ $values.repo }}.
+    
+    ## Contributors
+    Top contributor: @{{ $values.top_contributor }}
+    
+    ### Team Information
+    Predominant team: @{{ $values.predominant_team }}
+  prLabels:
+    - sre
+    - automated
+  prAssignees:
+    {{- range $values.top_contributors }}
+    - {{ .username }}
+    {{- end }}
+  scriptsContext:
+    environment: staging
+    region: us-east-1
+    cluster: eks-staging
+    team: "{{ $values.predominant_team }}"
+  scripts:
+    - "$PRO_ROOT/test/scripts/test.sh"
+---
+{{- end }}

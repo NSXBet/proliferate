@@ -1,0 +1,7 @@
+kubernetes:
+  base:
+    environment: production
+  apps:
+    - name: sample-app
+      hosts:
+        - foo.dev.baz

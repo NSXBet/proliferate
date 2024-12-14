@@ -1,0 +1,31 @@
+apiVersion: pullrequest.pro.dev/v1alpha1
+kind: PullRequest
+metadata:
+  name: example-pull-request
+  namespace: 01-test-pr
+spec:
+  repo: github.com/myorg/sample-app
+  branch: feature/add-new-service
+  commitMessage: "feat: add new microservice deployment"
+  prTitle: Add New Microservice Deployment
+  prBody: |
+    This PR adds the deployment configuration for our new microservice.
+    
+    Changes include:
+    - New deployment manifest
+    - Service configuration
+    - Required ConfigMaps
+  prLabels:
+    - infrastructure
+    - deployment
+    - automated
+  prAssignees:
+    - johndoe
+    - janedoe
+  scriptsContext:
+    environment: staging
+    region: us-east-1
+    cluster: eks-staging
+    team: platform
+  scripts:
+    - test/scripts/test.sh

@@ -1,0 +1,7 @@
+kubernetes:
+  base:
+    environment: staging
+  apps:
+    - name: sample-app
+      hosts:
+        - foo.bar.baz

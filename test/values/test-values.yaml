@@ -1,0 +1,26 @@
+sample-app:
+  repo: github.com/myorg/sample-app
+  top_contributor: alice
+  top_contributors:
+    - username: bob
+      commits: 2
+      teams:
+        - Team 1
+        - The team2
+    - username: alice
+      commits: 41
+      teams:
+        - Team 1
+    - username: michel
+      commits: 1
+      teams: []
+  predominant_team: Team 1
+sample-app-2:
+  repo: github.com/myorg/sample-app-2
+  top_contributor: jeff
+  top_contributors:
+    - username: jeff
+      commits: 17
+      teams:
+        - Other Team
+  predominant_team: Other Team
