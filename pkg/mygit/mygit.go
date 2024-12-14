@@ -36,9 +36,7 @@ func (g *Git) Clone(repo string) (string, error) {
 		return "", fmt.Errorf("failed to create temp directory: %v", err)
 	}
 
-	cloneURL := fmt.Sprintf("https://%s@github.com/%s.git", g.config.GetGithubToken(), repo)
-	fmt.Printf("Debug - Cloning repository: %s\n", repo)
-
+	cloneURL := fmt.Sprintf("https://oauth2:%s@%s.git", g.config.GetGithubToken(), repo)
 	cmd := exec.Command("git", "clone", cloneURL, tmpDir)
 	if output, err := cmd.CombinedOutput(); err != nil {
 		os.RemoveAll(tmpDir)
@@ -111,21 +109,10 @@ func (g *Git) CreateBranch(dir string, branch string) error {
 }
 
 func (g *Git) Push(dir string, branch string) error {
-	// Configure the remote URL with the token
-	remoteURL := fmt.Sprintf("https://%s@github.com/%s.git",
-		g.config.GetGithubToken(),
-		strings.TrimPrefix(strings.TrimPrefix(g.config.GetGithubToken(), "https://"), "github.com/"))
-
-	setRemoteCmd := exec.Command("git", "-C", dir, "remote", "set-url", "origin", remoteURL)
-	if err := setRemoteCmd.Run(); err != nil {
-		return fmt.Errorf("failed to set remote URL: %v", err)
-	}
-
 	cmd := exec.Command("git", "-C", dir, "push", "--force", "origin", branch)
 	if output, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed to push branch: %s: %v", output, err)
 	}
-
 	return nil
 }
 

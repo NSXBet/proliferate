@@ -32,7 +32,6 @@ func NewCommand(c core.Core) *cobra.Command {
 	cmd.Flags().StringVarP(&ac.valuesFile, "values", "f", "", "Path to values YAML file")
 	cmd.Flags().StringVarP(&ac.prFile, "pr", "p", "", "Path to pull request YAML file")
 	cmd.Flags().BoolVar(&ac.dryRun, "dry-run", false, "Print the parsed pull requests without applying")
-	cmd.MarkFlagRequired("values")
 	cmd.MarkFlagRequired("pr")
 
 	return cmd
@@ -49,14 +48,16 @@ func (ac *applyCommand) run(cmd *cobra.Command, args []string) error {
 
 	valuesData, err := os.ReadFile(ac.valuesFile)
 	if err != nil {
-		return fmt.Errorf("failed to read values file: %v", err)
+		fmt.Printf("failed to read values file: %v", err)
 	}
 
-	var values map[string]interface{}
-	decoder := yaml.NewDecoder(bytes.NewBuffer(valuesData))
-	decoder.KnownFields(false)
-	if err := decoder.Decode(&values); err != nil {
-		return fmt.Errorf("failed to parse values file: %v", err)
+	values := make(map[string]interface{})
+	if len(valuesData) > 0 {
+		decoder := yaml.NewDecoder(bytes.NewBuffer(valuesData))
+		decoder.KnownFields(false)
+		if err := decoder.Decode(&values); err != nil {
+			return fmt.Errorf("failed to parse values file: %v", err)
+		}
 	}
 
 	prTemplate, err := os.ReadFile(ac.prFile)

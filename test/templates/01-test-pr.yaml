@@ -4,8 +4,8 @@ metadata:
   name: example-pull-request
   namespace: 01-test-pr
 spec:
-  repo: github.com/myorg/sample-app
-  branch: feature/add-new-service
+  repo: github.com/nsxbet/proliferate 
+  branch: proliferate/test
   commitMessage: "feat: add new microservice deployment"
   prTitle: Add New Microservice Deployment
   prBody: |
