@@ -12,7 +12,7 @@ type Printer interface {
 	PrintPRConfig(pr interface{})
 	PrintInfo(format string, args ...interface{})
 	PrintDiff(diff string)
-	PrintScriptOutput(script string, output []byte)
+	PrintScriptOutput(script string, output []byte, err error)
 }
 
 type PRStatus struct {
@@ -25,6 +25,8 @@ type PRStatus struct {
 	Repository   string    `yaml:"repository"`
 	LastDiff     string    `yaml:"lastDiff"`
 	LastCommit   string    `yaml:"lastCommit"`
+	LastError    string    `yaml:"lastError,omitempty"`
+	LastErrorAt  time.Time `yaml:"lastErrorAt,omitempty"`
 }
 
 type NamespacedStatus map[string]map[string]PRStatus

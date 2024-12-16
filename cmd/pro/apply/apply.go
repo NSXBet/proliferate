@@ -91,10 +91,10 @@ func (ac *applyCommand) run(cmd *cobra.Command, args []string) error {
 		go func() {
 			for i := range jobs {
 				err := prSet.ProcessPR(ctx, i, prs[i], ac.dryRun)
-				results <- err
 				if err != nil {
-					cancel() // Cancel other workers on error
+					ac.core.Printer.PrintError("Failed to process PR %d: %v\n", i+1, err)
 				}
+				results <- err
 			}
 		}()
 	}
@@ -106,10 +106,16 @@ func (ac *applyCommand) run(cmd *cobra.Command, args []string) error {
 	close(jobs)
 
 	// Collect results
+	var errors []error
 	for i := 0; i < len(prs); i++ {
 		if err := <-results; err != nil {
-			return err
+			errors = append(errors, err)
 		}
+	}
+
+	// Return combined errors if any occurred
+	if len(errors) > 0 {
+		return fmt.Errorf("failed to process %d pull requests: %v", len(errors), errors)
 	}
 
 	return nil

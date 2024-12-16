@@ -29,8 +29,11 @@ spec:
     region: us-east-1
     cluster: eks-staging
     team: "{{ $values.predominant_team }}"
+    force_exit: {{ $values.force_exit }}
   scripts:
+    - "$PRO_ROOT/test/scripts/fail.sh"
     - "$PRO_ROOT/test/scripts/test.sh"
-    - "python3 $PRO_ROOT/test/scripts/test.py"
+    # - "python3 $PRO_ROOT/test/scripts/verbose_output.py"
+    # - "python3 $PRO_ROOT/test/scripts/test.py"
 ---
 {{- end }}

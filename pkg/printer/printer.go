@@ -12,7 +12,7 @@ type Printer interface {
 	PrintPRConfig(pr interface{})
 	PrintInfo(format string, args ...interface{})
 	PrintDiff(diff string)
-	PrintScriptOutput(script string, output []byte)
+	PrintScriptOutput(script string, output []byte, err error)
 	PrintPRSummary(namespace, name, repo, branch string, prNumber int, prURL, commit string, hasChanges bool)
 }
 

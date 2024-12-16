@@ -14,6 +14,7 @@ sample-app:
       commits: 21
       teams: *id004
   predominant_team: Team A
+  force_exit: 1
 
 sample-app02:
   repo: github.com/nsxbet/proliferate
@@ -31,3 +32,4 @@ sample-app02:
       commits: 21
       teams: *id004
   predominant_team: Team A
+  force_exit: 0

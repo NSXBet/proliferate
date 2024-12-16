@@ -154,13 +154,17 @@ func (p *ConsolePrinter) PrintDiff(diff string) {
 	fmt.Printf("\n%s\n", diffStyle.Render(strings.TrimSpace("Repository changes:\n"+diff)))
 }
 
-func (p *ConsolePrinter) PrintScriptOutput(script string, output []byte) {
+func (p *ConsolePrinter) PrintScriptOutput(script string, output []byte, err error) {
 	if len(output) == 0 {
 		return
 	}
 
-	// Create tab and content
-	activeTab := activeTabStyle.Render("Script")
+	// Create tab and content with script info
+	tabStyle := activeTabStyle
+	if err != nil {
+		tabStyle = tabStyle.Foreground(lipgloss.Color("#FF0000"))
+	}
+	activeTab := tabStyle.Render(fmt.Sprintf("Script %s", script))
 	tabs := []string{activeTab}
 
 	// Format the output
@@ -169,7 +173,6 @@ func (p *ConsolePrinter) PrintScriptOutput(script string, output []byte) {
 
 	// Build the content
 	content := []string{
-		subtitleStyle.Render(script),
 		"", // Empty line for spacing
 		strings.Join(outputLines, "\n"),
 	}

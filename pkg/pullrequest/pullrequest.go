@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/nsxbet/proliferate/pkg/mygit"
@@ -91,8 +92,9 @@ func (prs *PullRequestSet) ProcessPR(ctx context.Context, index int, pr PullRequ
 		return err
 	}
 
+	// Will halt if any script fails
 	for _, script := range pr.Spec.Scripts {
-		if err := prs.runScript(repoDir, script, pr.Spec.ScriptsContext); err != nil {
+		if err := prs.runScript(repoDir, script, pr.Spec.ScriptsContext, pr.Metadata.Name, pr.Metadata.Namespace); err != nil {
 			return err
 		}
 	}
@@ -176,27 +178,32 @@ func (prs *PullRequestSet) ProcessPR(ctx context.Context, index int, pr PullRequ
 	return nil
 }
 
-func (prs *PullRequestSet) runScript(repoDir string, script string, context map[string]string) error {
+func (prs *PullRequestSet) runScript(repoDir string, script string, context map[string]string, prName string, namespace string) error {
 	env := os.Environ()
 	currentDir, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("failed to get current directory: %v", err)
 	}
-
 	for k, v := range context {
-		env = append(env, fmt.Sprintf("%s=%s", k, v))
+		env = append(env, fmt.Sprintf("%s=%s", strings.ToUpper(k), v))
 	}
 	env = append(env, fmt.Sprintf("PRO_ROOT=%s", currentDir))
 
+	// Print envs
 	cmd := exec.Command("sh", "-c", script)
 	cmd.Dir = repoDir
 	cmd.Env = env
 	output, err := cmd.CombinedOutput()
+	prs.printer.PrintScriptOutput(fmt.Sprintf("PR(%s) Script %s", prName, script), output, err)
 	if err != nil {
-		return fmt.Errorf("script failed: %v\n%s", err, output)
+		errMsg := fmt.Sprintf("script failed: %v\n%s", err, output)
+		if updateErr := prs.status.UpdatePRStatus(namespace, prName, func(status *types.PRStatus) {
+			status.LastError = errMsg
+			status.LastErrorAt = time.Now()
+		}); updateErr != nil {
+			prs.printer.PrintError("Failed to update status: %v", updateErr)
+		}
+		return fmt.Errorf(errMsg)
 	}
-
-	prs.printer.PrintScriptOutput(script, output)
-
 	return nil
 }
