@@ -71,7 +71,7 @@ jobs:
           merge-multiple: true
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: nsx-actions/softprops_action-gh-release@v1
         with:
           files: |
             artifacts/pro-linux-amd64
