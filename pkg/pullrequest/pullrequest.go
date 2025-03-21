@@ -27,31 +27,71 @@ type PullRequestSet struct {
 }
 
 func NewPullRequestSet(yamlTemplate string, git *mygit.Git, printer printer.Printer) (*PullRequestSet, error) {
+	// Try single-document YAML first
+	var singlePR PullRequest
+	if err := yaml.Unmarshal([]byte(yamlTemplate), &singlePR); err == nil && singlePR.APIVersion != "" {
+		// Handle special case for PullRequestFilter kind
+		if singlePR.Kind == "PullRequestFilter" {
+			if singlePR.Spec.Org == "" || singlePR.Spec.RepositoryFilter == "" {
+				return nil, fmt.Errorf("PullRequestFilter kind requires both organization and repositoryFilter fields")
+			}
+
+			printer.PrintInfo("Detected PullRequestFilter kind with organization=%s and filter=%s",
+				singlePR.Spec.Org, singlePR.Spec.RepositoryFilter)
+
+			// Fetch repositories and create PR objects
+			filteredPRs, err := fetchReposAndCreatePRs(git, singlePR)
+			if err != nil {
+				return nil, fmt.Errorf("failed to fetch repositories: %v", err)
+			}
+
+			return &PullRequestSet{
+				prs:            filteredPRs,
+				git:            git,
+				status:         NewPRStatusManager(".proliferate", printer),
+				templateString: yamlTemplate,
+				printer:        printer,
+			}, nil
+		}
+
+		// Regular PullRequest - return it directly
+		return &PullRequestSet{
+			prs:            []PullRequest{singlePR},
+			git:            git,
+			status:         NewPRStatusManager(".proliferate", printer),
+			templateString: yamlTemplate,
+			printer:        printer,
+		}, nil
+	}
+
+	// No valid single document - try as multi-document YAML
 	var prs []PullRequest
-	decoder := yaml.NewDecoder(bytes.NewBufferString(yamlTemplate))
+	multiDecoder := yaml.NewDecoder(bytes.NewBufferString(yamlTemplate))
+
 	for {
 		var pr PullRequest
-		if err := decoder.Decode(&pr); err != nil {
-			if err == io.EOF {
-				break
-			}
+		err := multiDecoder.Decode(&pr)
+
+		// End of file - break the loop
+		if err == io.EOF {
+			break
+		}
+
+		// Any other error - return with message
+		if err != nil {
 			return nil, fmt.Errorf("failed to parse template: %v", err)
 		}
-		if pr.APIVersion != "" {
-			prs = append(prs, pr)
+
+		// Skip invalid documents
+		if pr.APIVersion == "" {
+			continue
 		}
+
+		// Regular PullRequest kind
+		prs = append(prs, pr)
 	}
 
-	if len(prs) == 0 {
-		var pr PullRequest
-		if err := yaml.Unmarshal([]byte(yamlTemplate), &pr); err != nil {
-			return nil, fmt.Errorf("failed to parse PR template: %v", err)
-		}
-		if pr.APIVersion != "" {
-			prs = append(prs, pr)
-		}
-	}
-
+	// No valid PRs found
 	if len(prs) == 0 {
 		return nil, fmt.Errorf("no valid pull requests found in template")
 	}
@@ -206,4 +246,37 @@ func (prs *PullRequestSet) runScript(repoDir string, script string, context map[
 		return fmt.Errorf(errMsg)
 	}
 	return nil
+}
+
+// fetchReposAndCreatePRs fetches repositories from GitHub based on org and filter,
+// then creates PullRequest objects for each matching repository
+func fetchReposAndCreatePRs(git *mygit.Git, template PullRequest) ([]PullRequest, error) {
+	ctx := context.Background()
+
+	// Use the mygit package to fetch matching repositories
+	repoURLs, err := git.FilterRepositoriesByOrg(ctx, template.Spec.Org, template.Spec.RepositoryFilter)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a PR object for each matching repository
+	var prs []PullRequest
+	for _, repo := range repoURLs {
+		// Clone the template PR
+		newPR := template
+
+		// Set the repo field
+		newPR.Spec.Repo = repo
+
+		// Change the kind to PullRequest
+		newPR.Kind = "PullRequest"
+
+		// Add unique identifier to PR name to avoid conflicts
+		repoName := strings.TrimPrefix(repo, "github.com/"+template.Spec.Org+"/")
+		newPR.Metadata.Name = fmt.Sprintf("%s-%s", template.Metadata.Name, repoName)
+
+		prs = append(prs, newPR)
+	}
+
+	return prs, nil
 }

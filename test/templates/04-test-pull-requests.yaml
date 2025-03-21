@@ -1,0 +1,35 @@
+apiVersion: pullrequest.pro.dev/v1alpha1
+kind: PullRequestFilter
+metadata:
+  name: test-pull-requests
+  namespace: 04-test-pull-requests
+spec:
+  organization: "your-org-name"
+  repositoryFilter: ".*"
+  scripts:
+    - name: test-pull-requests
+      command: ["bash", "-c"]
+      args:
+        - |
+          #!/bin/bash
+          echo "Searching for Docker images in repository: $REPO_NAME"
+          
+          # Find all Dockerfiles in the repository
+          DOCKERFILES=$(find . -type f -name "Dockerfile*" -o -name "*.dockerfile" -o -name "*.Dockerfile")
+          
+          if [ -z "$DOCKERFILES" ]; then
+            echo "No Dockerfiles found in repository"
+            exit 0
+          fi
+          
+          echo "Found Dockerfiles:"
+          echo "$DOCKERFILES"
+          echo ""
+          
+          echo "Docker base images used:"
+          for dockerfile in $DOCKERFILES; do
+            echo "In $dockerfile:"
+            # Extract FROM statements, handling multi-stage builds
+            grep -i "^FROM" "$dockerfile" | sed 's/FROM //i' | sed 's/ AS .*//i' | cut -d '@' -f1 | sort | uniq
+            echo ""
+          done

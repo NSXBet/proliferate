@@ -40,15 +40,17 @@ type PullRequest struct {
 		Namespace string `yaml:"namespace"`
 	} `yaml:"metadata"`
 	Spec struct {
-		Repo           string            `yaml:"repo"`
-		Branch         string            `yaml:"branch"`
-		CommitMessage  string            `yaml:"commitMessage"`
-		PRTitle        string            `yaml:"prTitle"`
-		PRBody         string            `yaml:"prBody"`
-		PRLabels       []string          `yaml:"prLabels"`
-		PRAssignees    []string          `yaml:"prAssignees"`
-		ScriptsContext map[string]string `yaml:"scriptsContext"`
-		Scripts        []string          `yaml:"scripts"`
+		Repo             string            `yaml:"repo"`
+		Org              string            `yaml:"organization"`
+		RepositoryFilter string            `yaml:"repositoryFilter"`
+		Branch           string            `yaml:"branch"`
+		CommitMessage    string            `yaml:"commitMessage"`
+		PRTitle          string            `yaml:"prTitle"`
+		PRBody           string            `yaml:"prBody"`
+		PRLabels         []string          `yaml:"prLabels"`
+		PRAssignees      []string          `yaml:"prAssignees"`
+		ScriptsContext   map[string]string `yaml:"scriptsContext"`
+		Scripts          []string          `yaml:"scripts"`
 	} `yaml:"spec"`
 }
 

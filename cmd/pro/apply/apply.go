@@ -78,7 +78,7 @@ func (ac *applyCommand) run(cmd *cobra.Command, args []string) error {
 	prs := prSet.GetPRs()
 
 	// Create a worker pool
-	workers := 3
+	workers := 60
 	if workers > len(prs) {
 		workers = len(prs)
 	}
